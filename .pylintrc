@@ -1,0 +1,5 @@
+[BASIC]
+const-rgx=[a-zA-Z_]+[_a-zA-Z0-9]*
+argument-rgx=[a-zA-Z_]+[_a-zA-Z0-9]*
+variable-rgx=[a-zA-Z_]+[_a-zA-Z0-9]*
+method-rgx=[a-zA-Z_]+[_a-zA-Z0-9]*

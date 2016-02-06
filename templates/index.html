@@ -1,0 +1,33 @@
+<!doctype html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+<script src="/static/Base64.js" type="text/javascript"></script>
+<script src="/static/Base64binary.js" type="text/javascript"></script>
+<script src="/static/WebAudioAPI.js" type="text/javascript"></script>
+<script src="/static/audioDetect.js" type="text/javascript"></script>
+<script src="/static/gm.js" type="text/javascript"></script>
+<script src="/static/loader.js" type="text/javascript"></script>
+<script src="/static/plugin.audiotag.js" type="text/javascript"></script>
+<script src="/static/plugin.webaudio.js" type="text/javascript"></script>
+<script src="/static/plugin.webmidi.js" type="text/javascript"></script>
+<script src="/static/dom_request_xhr.js" type="text/javascript"></script>
+<script src="/static/dom_request_script.js" type="text/javascript"></script>
+<script src="/static/acoustic_grand_piano-ogg.js" type="text/javascript"></script>
+<script src="/static/sequencer.js" type="text/javascript"></script>
+
+<title>Uncle Will's Javascript Sequencer</title>
+
+<script type="text/javascript">
+    $(function() {
+        MIDI.loadPlugin({
+    		soundfontUrl: "./soundfont/",
+    		instrument: "acoustic_grand_piano",
+    		onprogress: function(state, progress) {
+    			console.log(state, progress);
+    		},
+    		onsuccess: function() {
+                MIDI.setVolume(0, 127);
+                build_ui({{ height }}, {{ length }});
+    		}
+    	});
+    });
+</script>
