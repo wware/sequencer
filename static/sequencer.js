@@ -25,21 +25,18 @@ function Sequencer() {
                 MIDI.noteOn(0, note, 127, 0);
             }
         }
-        if (active) {
-            setTimeout(function() {
-                var j, note;
-                for (j = 0; j < numnotes; j++) {
-                    if (states[thisstep][j]) {
-                        note = pitches[j] + 60;
-                        MIDI.noteOff(0, note, 0, 0);
-                    }
+        setTimeout(function() {
+            for (j = 0; j < numnotes; j++) {
+                if (states[thisstep][j]) {
+                    note = pitches[j] + 60;
+                    MIDI.noteOff(0, note, 0, 0);
                 }
-                if (active) {
-                    setTimeout(step, 0.25 * time);
-                }
-            },
-            0.75 * time);
-        }
+            }
+            if (active) {
+                setTimeout(step, 0.25 * time);
+            }
+        },
+        0.75 * time);
     }
     function settime(t) {
         console.log('settime ' + t);
@@ -145,16 +142,15 @@ function build_ui(target) {
                 return function() {
                     console.log(i + ', ' + j);
                     if (sequencer.toggle(j, numnotes - 1 - i)) {
-                        td.attr({bgcolor: oncolor});
+                        td.addClass('active');
                     } else {
-                        td.attr({bgcolor: offcolor});
+                        td.removeClass('active');
                     }
                 }
             }
             td = $('<td>').attr({
                 id: "td-" + i + "-" + j,
-                class: "td",
-                bgcolor: offcolor
+                class: "td"
             });
             td.click(clickmaker(i, j, td));
             resettable.push(td);
