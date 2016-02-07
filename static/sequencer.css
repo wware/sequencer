@@ -1,0 +1,15 @@
+td {
+    background-color: #cfc
+}
+
+td.active {
+    background-color: #44f
+}
+
+#runbutton {
+    content: "Stopped"
+}
+
+#runbutton.active {
+    content: "Running"
+}
