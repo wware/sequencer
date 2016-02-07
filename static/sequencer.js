@@ -75,7 +75,7 @@ function Sequencer() {
 };
 
 
-function build_ui() {
+function build_ui(target) {
     var size = "40px";
     var offcolor = "#cfc";
     var oncolor = "#88f";
@@ -86,7 +86,7 @@ function build_ui() {
     });
     var sequencer = Sequencer();
 
-    $('body').append(
+    target.append(
         $('<div>').append(
             $('<button>')
             .text("Reset")

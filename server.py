@@ -3,8 +3,7 @@
 Module docstring, make pylint happy.
 """
 
-import threading
-
+import sys
 from flask import Flask, render_template
 
 app = Flask(__name__)
@@ -18,4 +17,9 @@ def index():
     return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80)
+    if sys.platform == 'darwin':
+        # run debug on the Mac
+        app.run(debug=True)
+    else:
+        # run production on Linux
+        app.run(host='0.0.0.0', port=80)
