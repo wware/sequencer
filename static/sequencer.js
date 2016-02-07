@@ -88,7 +88,7 @@ function build_ui(target) {
             $('<button>')
             .text("Reset")
             .click(function() {
-                $('.td').attr({bgcolor: offcolor});
+                $('.td').removeClass('active');
                 sequencer.reset();
             })
         ).append(
