@@ -3,23 +3,23 @@ th {
 }
 
 th.active {
-    background-color: #f44
+    background-color: #f00
 }
 
 td {
-    background-color: #cfc
+    background-color: #884
 }
 
 td.active {
-    background-color: #44f
+    background-color: #ee8
 }
 
 td.cmajor {
-    background-color: #ffc
+    background-color: #488
 }
 
 td.cmajor.active {
-    background-color: #f4f
+    background-color: #8ee
 }
 
 #runbutton {
