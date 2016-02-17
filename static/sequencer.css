@@ -1,9 +1,25 @@
+th {
+    background-color: #fff
+}
+
+th.active {
+    background-color: #f44
+}
+
 td {
     background-color: #cfc
 }
 
 td.active {
     background-color: #44f
+}
+
+td.cmajor {
+    background-color: #ffc
+}
+
+td.cmajor.active {
+    background-color: #f4f
 }
 
 #runbutton {

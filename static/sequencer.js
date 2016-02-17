@@ -1,11 +1,21 @@
 var length = 16;
-var numnotes = 12;
+var numnotes = 15;
+var active = true;
+var runbutton;
+
+function updateRunButton() {
+    if (active) {
+        $('#runbutton').text('Running');
+    } else {
+        $('#runbutton').text('Stopped');
+    }
+}
 
 function Sequencer() {
     var i, j, states = [];
     var nextstep = 0;
     var time = 100;  // milliseconds
-    var active = true;
+    var resettable = false;
     var pitches = [
         0, 2, 4, 5, 7, 9, 11, 12, 14, 16,
         17, 19, 21, 23, 24, 26, 28, 29, 31
@@ -17,9 +27,22 @@ function Sequencer() {
         }
     }
     function step() {
-        var j, note, thisstep = nextstep;
+        var j, pf, note, thisstep = nextstep;
+        if (resettable) {
+            for (i = 0; i < length; i++) {
+                for (j = 0; j < numnotes; j++) {
+                    states[i][j] = false;
+                }
+            }
+            resettable = false;
+            active = false;
+            updateRunButton();
+            return;
+        }
         nextstep = (thisstep + 1) % length;
         for (j = 0; j < numnotes; j++) {
+            $('#progress-row > th').removeClass('active');
+            $('#progress-row > th:nth-child(' + (thisstep + 1) + ')').addClass('active');
             if (states[thisstep][j]) {
                 note = pitches[j] + 60;
                 MIDI.noteOn(0, note, 127, 0);
@@ -39,26 +62,28 @@ function Sequencer() {
         0.75 * time);
     }
     function settime(t) {
-        console.log('settime ' + t);
         time = 1000 * t;    // convert to milliseconds
     }
     function running() {
-        console.log('start');
         active = !active;
-        if (active) { nextstep = 0; step(); }
-        return active;
+        if (active) {
+            step();
+        }
+        updateRunButton();
     }
     function toggle(i, j) {
         var x;
-        console.log('toggle ' + i + ' ' + j);
         states[i][j] = x = !states[i][j];
         return x;
     }
     function reset() {
-        console.log('reset');
-        for (i = 0; i < length; i++) {
-            for (j = 0; j < numnotes; j++) {
-                states[i][j] = false;
+        if (active) {
+            resettable = true;
+        } else {
+            for (i = 0; i < length; i++) {
+                for (j = 0; j < numnotes; j++) {
+                    states[i][j] = false;
+                }
             }
         }
     }
@@ -76,12 +101,22 @@ function build_ui(target) {
     var size = "40px";
     var offcolor = "#cfc";
     var oncolor = "#88f";
-    var i, j, row, td, colgroup;
+    var i, i2, j, row, td, colgroup;
     var resettable = [];
     var table = $('<table>').attr({
         cellSpacing: '10px'
     });
     var sequencer = Sequencer();
+
+    runbutton = $('<button>')
+        .attr({id: 'runbutton'})
+        .text("Running")
+        .attr({
+            style: "margin: 0px 0px 0px 20px"
+        })
+        .click(function() {
+            sequencer.running();
+        });
 
     target.append(
         $('<div>').append(
@@ -91,21 +126,7 @@ function build_ui(target) {
                 $('.td').removeClass('active');
                 sequencer.reset();
             })
-        ).append(
-            $('<button>')
-            .attr({id: 'runbutton'})
-            .text("Running")
-            .attr({
-                style: "margin: 0px 0px 0px 20px"
-            })
-            .click(function() {
-                if (sequencer.running()) {
-                    $('#runbutton').text('Running');
-                } else {
-                    $('#runbutton').text('Stopped');
-                }
-            })
-        ).append(
+        ).append(runbutton).append(
             $('<input>')
             .attr({
                 type: 'range',
@@ -132,16 +153,29 @@ function build_ui(target) {
             })
         );
     }
+
+    row = $('<tr>').attr({
+        id: 'progress-row',
+        style: "height: 5px;"
+    });
+    table.append(row);
+    for (j = 0; j < length; j++) {
+        th = $('<th>').attr({
+            class: "th"
+        });
+        row.append(th);
+    }
+
     for (i = 0; i < numnotes; i++) {
+        i2 = numnotes - 1 - i;
         row = $('<tr>').attr({
             style: "height:" + size
         });
         table.append(row);
         for (j = 0; j < length; j++) {
-            var clickmaker = function(i, j, td) {
+            var clickmaker = function(i2, j, td) {
                 return function() {
-                    console.log(i + ', ' + j);
-                    if (sequencer.toggle(j, numnotes - 1 - i)) {
+                    if (sequencer.toggle(j, i2)) {
                         td.addClass('active');
                     } else {
                         td.removeClass('active');
@@ -149,10 +183,13 @@ function build_ui(target) {
                 }
             }
             td = $('<td>').attr({
-                id: "td-" + i + "-" + j,
+                id: "td-" + i2 + "-" + j,
                 class: "td"
             });
-            td.click(clickmaker(i, j, td));
+            if ((i2 % 7) == 0 || (i2 % 7) == 2 || (i2 % 7) == 4) {
+                td.addClass('cmajor');
+            }
+            td.click(clickmaker(i2, j, td));
             resettable.push(td);
             row.append(td);
         }
