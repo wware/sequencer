@@ -1,7 +1,3 @@
-th {
-    background-color: #fff
-}
-
 th.active {
     background-color: #f00
 }
@@ -20,12 +16,4 @@ td.cmajor {
 
 td.cmajor.active {
     background-color: #8ee
-}
-
-#runbutton {
-    content: "Stopped"
-}
-
-#runbutton.active {
-    content: "Running"
 }

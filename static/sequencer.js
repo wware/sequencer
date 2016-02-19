@@ -1,33 +1,40 @@
-var length = 16;
-var numnotes = 15;
-var active = true;
-var runbutton;
-
-function updateRunButton() {
-    if (active) {
-        $('#runbutton').text('Running');
-    } else {
-        $('#runbutton').text('Stopped');
-    }
-}
-
 function Sequencer() {
     var i, j, states = [];
     var nextstep = 0;
     var time = 100;  // milliseconds
     var resettable = false;
+    var length = 16;
+    var numnotes = 15;
+    var active = true;
+    var buttonActive, buttonInactive;
     var pitches = [
         0, 2, 4, 5, 7, 9, 11, 12, 14, 16,
         17, 19, 21, 23, 24, 26, 28, 29, 31
     ];
-    for (i = 0; i < length; i++) {
-        states.push([]);
-        for (j = 0; j < numnotes; j++) {
-            states[i].push(false);
+    function setRunButtonControls(_active, _inactive) {
+        buttonActive = _active;
+        buttonInactive = _inactive;
+    }
+    function getLength() {
+        return length;
+    }
+    function getNumNotes() {
+        return numnotes;
+    }
+    function setLength(x) {
+        var i, step;
+        while (x > states.length) {
+            step = [];
+            for (i = 0; i < numnotes; i++) {
+                step.push(false);
+            }
+            states.push(step);
         }
+        length = x;
     }
     function step() {
         var j, pf, note, thisstep = nextstep;
+        var pitchOffset = 48;   // C below middle C
         if (resettable) {
             for (i = 0; i < length; i++) {
                 for (j = 0; j < numnotes; j++) {
@@ -36,22 +43,24 @@ function Sequencer() {
             }
             resettable = false;
             active = false;
-            updateRunButton();
             return;
         }
         nextstep = (thisstep + 1) % length;
         for (j = 0; j < numnotes; j++) {
             $('#progress-row > th').removeClass('active');
             $('#progress-row > th:nth-child(' + (thisstep + 1) + ')').addClass('active');
+            if (states[thisstep] === undefined) {
+                debugger;
+            }
             if (states[thisstep][j]) {
-                note = pitches[j] + 60;
+                note = pitches[j] + pitchOffset;
                 MIDI.noteOn(0, note, 127, 0);
             }
         }
         setTimeout(function() {
             for (j = 0; j < numnotes; j++) {
                 if (states[thisstep][j]) {
-                    note = pitches[j] + 60;
+                    note = pitches[j] + pitchOffset;
                     MIDI.noteOff(0, note, 0, 0);
                 }
             }
@@ -69,7 +78,7 @@ function Sequencer() {
         if (active) {
             step();
         }
-        updateRunButton();
+        active ? buttonActive() : buttonInactive();
     }
     function toggle(i, j) {
         var x;
@@ -87,12 +96,20 @@ function Sequencer() {
             }
         }
     }
+
+    states = [];
+    setLength(length);
     step();
+
     return {
         running: running,
         settime: settime,
         toggle: toggle,
-        reset: reset
+        reset: reset,
+        setRunButtonControls: setRunButtonControls,
+        getLength: getLength,
+        getNumNotes: getNumNotes,
+        setLength: setLength
     };
 };
 
@@ -108,7 +125,7 @@ function build_ui(target) {
     });
     var sequencer = Sequencer();
 
-    runbutton = $('<button>')
+    var runbutton = $('<button>')
         .attr({id: 'runbutton'})
         .text("Running")
         .attr({
@@ -117,6 +134,14 @@ function build_ui(target) {
         .click(function() {
             sequencer.running();
         });
+    sequencer.setRunButtonControls(
+        function() {
+            runbutton.text('Running');
+        },
+        function() {
+            runbutton.text('Stopped');
+        }
+    );
 
     target.append(
         $('<div>').append(
@@ -146,7 +171,7 @@ function build_ui(target) {
 
     colgroup = $('<colgroup>');
     table.append(colgroup);
-    for (i = 0; i < length; i++) {
+    for (i = 0; i < sequencer.getLength(); i++) {
         colgroup.append(
             $('<col>').attr({
                 style: "width:" + size
@@ -159,20 +184,20 @@ function build_ui(target) {
         style: "height: 5px;"
     });
     table.append(row);
-    for (j = 0; j < length; j++) {
+    for (j = 0; j < sequencer.getLength(); j++) {
         th = $('<th>').attr({
             class: "th"
         });
         row.append(th);
     }
 
-    for (i = 0; i < numnotes; i++) {
-        i2 = numnotes - 1 - i;
+    for (i = 0; i < sequencer.getNumNotes(); i++) {
+        i2 = sequencer.getNumNotes() - 1 - i;
         row = $('<tr>').attr({
             style: "height:" + size
         });
         table.append(row);
-        for (j = 0; j < length; j++) {
+        for (j = 0; j < sequencer.getLength(); j++) {
             var clickmaker = function(i2, j, td) {
                 return function() {
                     if (sequencer.toggle(j, i2)) {
